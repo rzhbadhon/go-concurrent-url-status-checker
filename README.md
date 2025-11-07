@@ -50,6 +50,6 @@ Perfect for learning Go’s concurrency model in a practical, hands-on way.
 
 ### Run the tool
 ```bash
-git clone https://github.com/yourusername/go-concurrent-url-status-checker.git
+git clone https://github.com/rzhbadhon/go-concurrent-url-status-checker.git
 cd go-concurrent-url-status-checker
 go run .
