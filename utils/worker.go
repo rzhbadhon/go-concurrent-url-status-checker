@@ -2,33 +2,33 @@ package utils
 
 import (
 	"fmt"
+	"go-url-checker/models"
 	"net/http"
 	"sync"
+	"time"
 )
 
-func Worker(wg *sync.WaitGroup, id int, jobs <-chan string, results chan<- string) {
+func CheckUrl(url string, wg *sync.WaitGroup, ResultsChan chan<- models.Result) {
 	defer wg.Done()
 
-	// recieve url from jobs channel
-	// this repeats until the channel close
-	for url := range jobs {
-		fmt.Printf("Worker %d working job: %s\n", id, url)
-
-		// we send get req
-		resp, err := http.Get(url)
-
-		// sending results into the results channel
-		if err != nil {
-			// if the url is down
-			results <- fmt.Sprintf("[Failed] %s -> %s", url, err.Error())
-
-		} else {
-			//if successful
-			results <- fmt.Sprintf("[Passed] %s -> Status: %s", url, resp.Status)
-			resp.Body.Close()
-
+	// a client to check url for 5 sec
+	client := http.Client{
+		Timeout: 5 * time.Second,
+	}
+	resp, err := client.Get(url)
+	if err != nil{
+		// if the site is down of any issues
+		ResultsChan <- models.Result{
+			URL: url,
+			Status: fmt.Sprintf("Down 🔴 (Error: %s)", err.Error()),
 		}
-
+		return
 	}
 
+	defer resp.Body.Close()
+	// if success
+	ResultsChan <- models.Result{
+		URL: url,
+		Status: fmt.Sprintf("Up ✅ (Status: %s)", resp.Status),
+	}
 }
